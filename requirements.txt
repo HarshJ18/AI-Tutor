@@ -1,0 +1,32 @@
+# AI Tutor Project Dependencies
+# Core Framework
+streamlit>=1.28.0
+
+# AI and Machine Learning
+groq>=0.4.0
+sentence-transformers>=2.2.2
+tf-keras>=2.15.0
+
+# Document Processing
+PyPDF2>=3.0.1
+python-docx>=0.8.11
+
+# Data Processing and Analysis
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Visualization and Reporting
+matplotlib>=3.7.0
+plotly>=5.15.0
+
+# PDF Generation (for documentation)
+reportlab>=4.0.0
+
+# Additional Utilities
+Pillow>=10.0.0
+scikit-learn>=1.3.0
+
+# API Server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6

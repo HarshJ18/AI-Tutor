@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor API - Test Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .response-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .response-box.success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .response-box.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload-label:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .endpoint-info {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .endpoint-info code {
+            background: #fff;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 AI Tutor API - Test Frontend</h1>
+        <p class="subtitle">Test all API endpoints from your browser</p>
+
+        <!-- API Configuration -->
+        <div class="section">
+            <h2>⚙️ API Configuration</h2>
+            <div class="form-group">
+                <label for="apiBaseUrl">API Base URL:</label>
+                <input type="text" id="apiBaseUrl" value="http://localhost:8000" placeholder="http://localhost:8000">
+            </div>
+            <div class="form-group">
+                <label for="apiKey">Groq API Key:</label>
+                <input type="password" id="apiKey" placeholder="Enter your Groq API key">
+            </div>
+            <button onclick="testHealth()">🔍 Test Connection</button>
+            <div id="healthResponse" class="response-box hidden"></div>
+        </div>
+
+        <!-- Chat Endpoint -->
+        <div class="section">
+            <h2>💬 Chat with AI Tutor</h2>
+            <div class="form-group">
+                <label for="chatQuestion">Question:</label>
+                <textarea id="chatQuestion" placeholder="Ask a question about your documents...">What is natural language processing?</textarea>
+            </div>
+            <div class="form-group">
+                <label for="chatSubject">Subject Filter:</label>
+                <select id="chatSubject">
+                    <option value="all">All Subjects</option>
+                </select>
+            </div>
+            <button onclick="sendChat()">🚀 Send Question</button>
+            <div id="chatResponse" class="response-box hidden"></div>
+        </div>
+
+        <!-- Build Index -->
+        <div class="section">
+            <h2>📚 Build RAG Index</h2>
+            <p style="margin-bottom: 15px; color: #666;">Process all documents in pdf/ and uploads/ folders</p>
+            <button onclick="buildIndex()">🔧 Build Index</button>
+            <div id="indexResponse" class="response-box hidden"></div>
+        </div>
+
+        <!-- Upload Document -->
+        <div class="section">
+            <h2>📄 Upload Document</h2>
+            <div class="form-group">
+                <label>Select File (PDF, DOCX, TXT):</label>
+                <div class="file-upload">
+                    <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt">
+                    <label for="fileInput" class="file-upload-label">
+                        📁 Click to select file or drag and drop
+                    </label>
+                </div>
+            </div>
+            <button onclick="uploadFile()">📤 Upload File</button>
+            <div id="uploadResponse" class="response-box hidden"></div>
+        </div>
+
+        <!-- Get Subjects -->
+        <div class="section">
+            <h2>🎯 Get Available Subjects</h2>
+            <button onclick="getSubjects()">📋 Get Subjects</button>
+            <div id="subjectsResponse" class="response-box hidden"></div>
+        </div>
+
+        <!-- Generate Quiz -->
+        <div class="section">
+            <h2>🧠 Generate Quiz</h2>
+            <div class="form-group">
+                <label for="quizContent">Content:</label>
+                <textarea id="quizContent" placeholder="Paste content to generate quiz from...">Natural language processing (NLP) is a branch of artificial intelligence that helps computers understand, interpret and manipulate human language. NLP draws from many disciplines, including computer science and computational linguistics, in its pursuit to fill the gap between human communication and computer understanding.</textarea>
+            </div>
+            <div class="grid">
+                <div class="form-group">
+                    <label for="quizQuestions">Number of Questions:</label>
+                    <input type="number" id="quizQuestions" value="5" min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label for="quizDifficulty">Difficulty:</label>
+                    <select id="quizDifficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="generateQuiz()">🎯 Generate Quiz</button>
+            <div id="quizResponse" class="response-box hidden"></div>
+        </div>
+
+        <!-- Retrieve Documents -->
+        <div class="section">
+            <h2>🔍 Retrieve Documents</h2>
+            <div class="form-group">
+                <label for="retrieveQuery">Query:</label>
+                <input type="text" id="retrieveQuery" placeholder="Search query..." value="natural language processing">
+            </div>
+            <div class="form-group">
+                <label for="retrieveK">Number of Results:</label>
+                <input type="number" id="retrieveK" value="5" min="1" max="20">
+            </div>
+            <button onclick="retrieveDocuments()">🔎 Retrieve</button>
+            <div id="retrieveResponse" class="response-box hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = () => document.getElementById('apiBaseUrl').value || 'http://localhost:8000';
+        const API_KEY = () => document.getElementById('apiKey').value;
+
+        async function makeRequest(endpoint, method = 'GET', body = null, isFormData = false) {
+            const url = `${API_BASE()}${endpoint}`;
+            const options = {
+                method,
+                headers: {}
+            };
+
+            if (body) {
+                if (isFormData) {
+                    options.body = body;
+                } else {
+                    options.headers['Content-Type'] = 'application/json';
+                    options.body = JSON.stringify(body);
+                }
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, data: { error: error.message }, status: 0 };
+            }
+        }
+
+        function showResponse(elementId, result, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('hidden', 'success', 'error');
+            element.classList.add(isSuccess ? 'success' : 'error');
+            element.textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function testHealth() {
+            const responseBox = document.getElementById('healthResponse');
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = 'Loading...';
+            
+            const result = await makeRequest('/api/health');
+            showResponse('healthResponse', result.data, result.success);
+        }
+
+        async function sendChat() {
+            if (!API_KEY()) {
+                alert('Please enter your API key');
+                return;
+            }
+
+            const responseBox = document.getElementById('chatResponse');
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = 'Loading...';
+
+            const request = {
+                api_key: API_KEY(),
+                question: document.getElementById('chatQuestion').value,
+                subject_filter: document.getElementById('chatSubject').value,
+                k: 5
+            };
+
+            const result = await makeRequest('/api/chat', 'POST', request);
+            showResponse('chatResponse', result.data, result.success);
+        }
+
+        async function buildIndex() {
+            if (!API_KEY()) {
+                alert('Please enter your API key');
+                return;
+            }
+
+            const responseBox = document.getElementById('indexResponse');
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = 'Building index... This may take a while...';
+
+            const request = {
+                api_key: API_KEY(),
+                pdf_dir: 'pdf',
+                upload_dir: 'uploads'
+            };
+
+            const result = await makeRequest('/api/build-index', 'POST', request);
+            showResponse('indexResponse', result.data, result.success);
+            
+            // Refresh subjects after building index
+            if (result.success) {
+                setTimeout(getSubjects, 1000);
+            }
+        }
+
+        async function uploadFile() {
+            if (!API_KEY()) {
+                alert('Please enter your API key');
+                return;
+            }
+
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('Please select a file');
+                return;
+            }
+
+            const responseBox = document.getElementById('uploadResponse');
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('api_key', API_KEY());
+
+            const result = await makeRequest('/api/upload', 'POST', formData, true);
+            showResponse('uploadResponse', result.data, result.success);
+        }
+
+        async function getSubjects() {
+            const responseBox = document.getElementById('subjectsResponse');
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = 'Loading...';
+
+            const result = await makeRequest('/api/subjects');
+            showResponse('subjectsResponse', result.data, result.success);
+
+            // Update subject filter dropdown
+            if (result.success && result.data.subjects) {
+                const select = document.getElementById('chatSubject');
+                select.innerHTML = '<option value="all">All Subjects</option>';
+                result.data.subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1).replace('_', ' ');
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        async function generateQuiz() {
+            if (!API_KEY()) {
+                alert('Please enter your API key');
+                return;
+            }
+
+            const responseBox = document.getElementById('quizResponse');
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = 'Generating quiz...';
+
+            const request = {
+                api_key: API_KEY(),
+                content: document.getElementById('quizContent').value,
+                num_questions: parseInt(document.getElementById('quizQuestions').value),
+                difficulty: document.getElementById('quizDifficulty').value
+            };
+
+            const result = await makeRequest('/api/quiz/generate', 'POST', request);
+            showResponse('quizResponse', result.data, result.success);
+        }
+
+        async function retrieveDocuments() {
+            if (!API_KEY()) {
+                alert('Please enter your API key');
+                return;
+            }
+
+            const responseBox = document.getElementById('retrieveResponse');
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = 'Retrieving...';
+
+            const request = {
+                api_key: API_KEY(),
+                query: document.getElementById('retrieveQuery').value,
+                k: parseInt(document.getElementById('retrieveK').value)
+            };
+
+            const result = await makeRequest('/api/retrieve', 'POST', request);
+            showResponse('retrieveResponse', result.data, result.success);
+        }
+
+        // Load subjects on page load
+        window.addEventListener('load', () => {
+            getSubjects();
+        });
+    </script>
+</body>
+</html>
+
